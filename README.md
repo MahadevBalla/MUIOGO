@@ -1,9 +1,5 @@
 # Modelling User Interface for OG-Core & OSeMOSYS (MUIOGO)
 
-![License](https://img.shields.io/github/license/OSeMOSYS/MUIO)
-![Version](https://img.shields.io/github/v/release/OSeMOSYS/MUIO)
-![GitHub all releases](https://img.shields.io/github/downloads/OSeMOSYS/MUIO/total)
-
 This project aims to integrate two widely used open-source policy modelling frameworks —CLEWS and OG-Core— into a unified, end-to-end decision-support tool for sustainable development planning. By linking sectoral resource systems (climate, land, energy, and water) with a dynamic macroeconomic model, the project will enable policymakers to assess the economy-wide impacts of climate and development policies in a transparent, reproducible, and user-friendly way. These frameworks have been successfully implemented in over 20 countries in a wide range of issues, from informing the development of Nationally Determined Contributions (NDCs) under the Paris Agreement and preventing maladaptation to climate impacts, to assessing options to help lower-income households, or informing on the viability of social protection and pension systems — thus benefitting hundreds of millions of people worldwide.
 
 The Economic Analysis and Policy Division (EAPD) of the United Nations Department of Economic and Social Affairs (DESA) oversees the development and country-level implementation of these open-source modelling tools. For over a decade, these models have supported developing countries facing challenges in achieving sustainable development, particularly Small Island Developing States (SIDS), Land-Locked Countries, and Least Developed Countries. Because they are open source, assumptions are visible and results are reproducible, supporting informed policy discussion. They can be run and adapted at low cost, and they can be calibrated to the data a country actually has, making rigorous analyses feasible in developing and low-income settings where proprietary tools are often out of reach.
