@@ -11,3 +11,5 @@ Led by the United Nations Department of Economic and Social Affairs (DESA), thes
 •	OG-Core is a dynamic overlapping-generations macroeconomic model that evaluates long-term fiscal, demographic, and economic policies.
 
 The project will create a standardized interface and shared execution system linking the two models, enabling integrated analyses that are not currently possible. The enhanced OG–CLEWS framework will be deployed in more than 10 countries, supporting evidence-based policymaking and helping countries advance toward their Sustainable Development Goals through 2030.
+
+Check the Wiki for more detailed information about the project!
