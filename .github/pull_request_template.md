@@ -5,6 +5,7 @@
 
 ## Related issues
 
+- [ ] Issue exists and is linked
 - Closes #
 - Related #
 
@@ -22,5 +23,5 @@
 ## Scope check
 
 - [ ] No unrelated refactors
+- [ ] Implemented from a feature branch
 - [ ] Change is deliverable without upstream `OSeMOSYS/MUIO` dependency
-
