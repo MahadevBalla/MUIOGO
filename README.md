@@ -14,32 +14,29 @@ The project will create a standardized interface and shared execution system lin
 
 See the [Project Background & Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision)
 
-MUIOGO is the integration project for combining MUIO with OG workflows.
+MUIOGO is the integration project to bring the purely pyton-based OG-Core model into MUIO, the GUI for OSeMOSYS (CLEWS).
 
 At the moment, this repository starts from a direct copy baseline of MUIO. The
-goal of MUIOGO is to evolve that baseline into an integrated, maintainable, and
-platform-independent project.
+goal of MUIOGO is to evolve that baseline into an integrated OG–CLEWS model that is maintainable and
+platform-independent.
 
 If you are new to this repo, start with the current installation notes below.
 
 ## Current installation status
 
-### Windows (MUIO `.exe`, current stable path)
+### Windows
 
 MUIO is currently distributed primarily as a Windows desktop installer.
 
-1. Download the latest `.exe` installer from:
-   `https://forms.office.com/Pages/ResponsePage.aspx?id=wE8mz7iun0SQVILORFQISwwn5YyR7ONHs-3JdG3f5AFUODlJOEQwWTBXMlRRNFUwNEpUTUZYQ1RXOS4u`
+1. Download the latest `.exe` installer from [here](https://github.com/OSeMOSYS/MUIO/releases)
 2. Move the `.exe` file to a folder where you have administrator permissions.
 3. Right-click `MUIO.exe` and select **Run as administrator**.
 4. Wait for installation to complete.
 5. Open the app from the Start Menu if it does not open automatically.
 
-### macOS (current available path)
+### MacOS
 
-Use `MUIO-Mac` as the current macOS-capable path:
-
-- `https://github.com/SeaCelo/MUIO-Mac`
+Use [MUIO-Mac](https://github.com/SeaCelo/MUIO-Mac) as the current macOS-capable path:
 
 ### Platform-independence goal
 
@@ -88,7 +85,7 @@ MUIOGO should not depend on it for delivery decisions.
 
 ## Wiki usage
 
-The wiki is used only for high-level background context:
+The wiki is used only for now for high-level background context:
 
 - [Project Background and Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision)
 
