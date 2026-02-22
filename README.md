@@ -54,6 +54,40 @@ Use [MUIO-Mac](https://github.com/SeaCelo/MUIO-Mac) as the current macOS-capable
 One of the core goals of MUIOGO is to become platform independent so separate
 platform-specific ports are no longer required.
 
+### Developer setup (all platforms)
+
+A single setup flow prepares Python, dependencies, and solvers on any OS:
+
+```bash
+# macOS / Linux
+./scripts/setup.sh
+
+# Windows
+scripts\setup.bat
+```
+
+Or run the Python script directly:
+
+```bash
+python scripts/setup_dev.py          # full setup
+python scripts/setup_dev.py --check  # verify only
+```
+
+The script will:
+1. Create a Python virtual environment (`venv/`)
+2. Install Python dependencies from `requirements.txt`
+3. Install GLPK and CBC solvers via your OS package manager
+4. Run verification checks and print clear pass/fail results
+
+After setup, activate the environment and start the app:
+```bash
+source venv/bin/activate   # macOS/Linux
+# venv\Scripts\activate    # Windows
+
+cd API && python app.py
+# Open http://127.0.0.1:5002
+```
+
 ## What is in this repository
 
 - `API/`: Flask backend and run/data endpoints
