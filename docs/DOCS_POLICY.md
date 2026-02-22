@@ -22,19 +22,19 @@ These files are versioned, reviewable via PR, and tied to code changes.
 The repository wiki is allowed for high-level background context only.
 
 Use the wiki for:
-- narrative overview,
-- non-normative program context.
+- narrative overview
+- non-normative program context
 
 Do not use the wiki for:
-- setup instructions,
-- contribution workflow,
-- architecture source of truth,
-- scope/evaluation rules.
+- setup instructions
+- contribution workflow
+- architecture source of truth
+- scope/evaluation rules
 
 If wiki content conflicts with repository docs, repository docs are authoritative.
 
 ## Update policy
 
-- Any setup/workflow/architecture change requires matching doc updates in the same PR.
-- Cross-references should be kept current and minimal.
+- Any setup/workflow/architecture change requires matching doc updates in the same PR
+- Cross-references should be kept current and minimal
 
