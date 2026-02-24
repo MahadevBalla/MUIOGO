@@ -1,6 +1,5 @@
 #import sys
 import os
-import sys
 
 from flask import Flask, jsonify, request, session, render_template
 from flask_cors import CORS
@@ -32,12 +31,6 @@ static_dir = os.path.abspath('WebAPP')
 
 # template_dir = 'WebAPP'
 # static_dir = '../WebAPP'
-
-print(template_dir)
-print(static_dir)
-print(sys.executable)
-
-print(__name__)
 
 app = Flask(__name__, static_url_path='', static_folder=static_dir,  template_folder=template_dir)
 
@@ -117,16 +110,30 @@ if __name__ == '__main__':
     import mimetypes
     mimetypes.add_type('application/javascript', '.js')
     port = int(os.environ.get("PORT", 5002))
-    print("PORTTTTTTTTTTT")
+
+    def print_startup_info(host, current_port, server_name):
+        mode = 'local' if Config.HEROKU_DEPLOY == 0 else 'heroku'
+        access_host = '127.0.0.1' if host == '0.0.0.0' else host
+        print("MUIOGO API starting...")
+        print(f"Server: {server_name}")
+        print(f"Mode: {mode}")
+        print(f"Host: {host}")
+        print(f"Port: {current_port}")
+        print(f"Open: http://{access_host}:{current_port}")
+
     if Config.HEROKU_DEPLOY == 0: 
         #localhost
         #app.run(host='127.0.0.1', port=port, debug=True)
         #waitress server
         #prod server
         from waitress import serve
-        serve(app, host='127.0.0.1', port=port)
+        host = '127.0.0.1'
+        print_startup_info(host, port, 'waitress')
+        serve(app, host=host, port=port)
     else:
         #HEROKU
-        app.run(host='0.0.0.0', port=port, debug=True)
+        host = '0.0.0.0'
+        print_startup_info(host, port, 'flask-dev')
+        app.run(host=host, port=port, debug=True)
         #app.run(host='127.0.0.1', port=port, debug=True)
 
