@@ -12,17 +12,21 @@ Sets up a complete development environment for MUIOGO:
 Usage:
     python scripts/setup_dev.py          # full setup
     python scripts/setup_dev.py --check  # verification only (skip install)
+    python scripts/setup_dev.py --venv-dir ~/my-envs/muiogo
     python scripts/setup_dev.py --with-demo-data
     python scripts/setup_dev.py --with-demo-data --force-demo-data --yes
 
 Supports: macOS, Linux (apt/dnf/pacman), Windows
 
 Python support: >=3.10 and <3.13 (recommended: 3.11)
+
+Default venv location: ~/.venvs/muiogo (outside repo)
 """
 
 import argparse
 import hashlib
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -37,9 +41,8 @@ from pathlib import Path
 # ──────────────────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VENV_DIR = PROJECT_ROOT / "venv"
+VENV_DIR = (Path.home() / ".venvs" / "muiogo").resolve()
 REQUIREMENTS = PROJECT_ROOT / "requirements.txt"
-REQUIREMENTS_HASH_FILE = VENV_DIR / ".requirements.sha256"
 SYSTEM = platform.system()  # 'Darwin', 'Linux', 'Windows'
 MIN_PYTHON = (3, 10)
 MAX_PYTHON = (3, 13)  # exclusive
@@ -111,6 +114,21 @@ def _python_supported(version: tuple[int, int]) -> bool:
     return MIN_PYTHON <= version < MAX_PYTHON
 
 
+def _requirements_hash_file() -> Path:
+    return VENV_DIR / ".requirements.sha256"
+
+
+def _resolve_venv_dir(venv_dir_arg: str | None) -> Path:
+    if venv_dir_arg:
+        return Path(venv_dir_arg).expanduser().resolve()
+
+    env_override = os.environ.get("MUIOGO_VENV_DIR", "").strip()
+    if env_override:
+        return Path(env_override).expanduser().resolve()
+
+    return (Path.home() / ".venvs" / "muiogo").resolve()
+
+
 def _sha256(path: Path) -> str:
     hasher = hashlib.sha256()
     with path.open("rb") as f:
@@ -120,10 +138,11 @@ def _sha256(path: Path) -> str:
 
 
 def _read_requirements_hash() -> str | None:
-    if not REQUIREMENTS_HASH_FILE.exists():
+    hash_file = _requirements_hash_file()
+    if not hash_file.exists():
         return None
     try:
-        return REQUIREMENTS_HASH_FILE.read_text(encoding="utf-8").strip() or None
+        return hash_file.read_text(encoding="utf-8").strip() or None
     except Exception:
         return None
 
@@ -282,6 +301,12 @@ def setup_venv() -> bool:
     """Create a Python venv if one does not already exist."""
     _print_header("Step 1: Python virtual environment")
 
+    try:
+        VENV_DIR.parent.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        _print_fail("Could not create parent directory for venv", str(exc))
+        return False
+
     if _venv_python().exists():
         print(f"  Virtual environment already exists at {VENV_DIR}")
         return True
@@ -344,7 +369,7 @@ def install_python_deps() -> bool:
         return False
 
     try:
-        REQUIREMENTS_HASH_FILE.write_text(current_req_hash + "\n", encoding="utf-8")
+        _requirements_hash_file().write_text(current_req_hash + "\n", encoding="utf-8")
     except Exception as exc:
         _print_warn("Could not write requirements cache file", str(exc))
 
@@ -643,17 +668,18 @@ def _print_summary(results: dict[str, bool]) -> None:
 
     if all_ok:
         activate_cmd = (
-            r"venv\Scripts\activate" if SYSTEM == "Windows"
-            else "source venv/bin/activate"
+            f'"{VENV_DIR / "Scripts" / "activate"}"' if SYSTEM == "Windows"
+            else f'source "{VENV_DIR / "bin" / "activate"}"'
         )
+        run_cmd = f'"{_venv_python()}" "{PROJECT_ROOT / "API" / "app.py"}"'
         print(textwrap.dedent(f"""\
         {GREEN}{BOLD}All checks passed! Your MUIOGO environment is ready.{RESET}
 
         Next steps:
-          1. Activate the virtual environment:
+          1. Start the app directly:
+               {run_cmd}
+          2. (Optional) activate the virtual environment:
                {activate_cmd}
-          2. Start the app:
-               cd API && python app.py
           3. Open http://127.0.0.1:5002 in your browser.
         """))
     else:
@@ -680,6 +706,13 @@ def main() -> int:
         description="MUIOGO cross-platform development environment setup",
     )
     parser.add_argument(
+        "--venv-dir",
+        help=(
+            "Virtual environment directory path. "
+            "Default: ~/.venvs/muiogo (or MUIOGO_VENV_DIR if set)."
+        ),
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="Run verification checks only (skip install steps)",
@@ -704,6 +737,11 @@ def main() -> int:
     if args.force_demo_data:
         args.with_demo_data = True
 
+    global VENV_DIR
+    VENV_DIR = _resolve_venv_dir(
+        venv_dir_arg=args.venv_dir,
+    )
+
     current_py = sys.version_info[:2]
     if not _python_supported(current_py):
         print(
@@ -718,6 +756,13 @@ def main() -> int:
     print(f"  Python   : {sys.version.split()[0]}")
     print(f"  Support  : >={MIN_PYTHON[0]}.{MIN_PYTHON[1]}, <{MAX_PYTHON[0]}.{MAX_PYTHON[1]}")
     print(f"  Project  : {PROJECT_ROOT}")
+    print(f"  Venv dir : {VENV_DIR}")
+
+    if PROJECT_ROOT.resolve() in VENV_DIR.resolve().parents:
+        _print_warn(
+            "Using in-repo virtual environment",
+            "This can cause high CPU in Codex Desktop. External venv is recommended.",
+        )
 
     if args.check:
         demo_ok = True
