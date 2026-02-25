@@ -11,7 +11,25 @@ setlocal enabledelayedexpansion
 set "SCRIPT_DIR=%~dp0"
 set "PROJECT_ROOT=%SCRIPT_DIR%.."
 
-REM Try python3 first, then python
+REM Prefer specific minor versions first to avoid unsupported interpreters.
+where python3.12 >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PYTHON=python3.12"
+    goto :check_version
+)
+
+where python3.11 >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PYTHON=python3.11"
+    goto :check_version
+)
+
+where python3.10 >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PYTHON=python3.10"
+    goto :check_version
+)
+
 where python3 >nul 2>&1
 if %errorlevel% equ 0 (
     set "PYTHON=python3"
@@ -24,15 +42,38 @@ if %errorlevel% equ 0 (
     goto :check_version
 )
 
-echo ERROR: Python 3.9+ is required but not found in PATH.
-echo Install Python from https://www.python.org/downloads/ and try again.
+REM Fall back to Windows Python launcher if direct python commands are unavailable.
+where py >nul 2>&1
+if %errorlevel% equ 0 (
+    py -3.12 -c "import sys" >nul 2>&1
+    if %errorlevel% equ 0 (
+        set "PYTHON=py -3.12"
+        goto :check_version
+    )
+    py -3.11 -c "import sys" >nul 2>&1
+    if %errorlevel% equ 0 (
+        set "PYTHON=py -3.11"
+        goto :check_version
+    )
+    py -3.10 -c "import sys" >nul 2>&1
+    if %errorlevel% equ 0 (
+        set "PYTHON=py -3.10"
+        goto :check_version
+    )
+    set "PYTHON=py"
+    goto :check_version
+)
+
+echo ERROR: A supported Python interpreter was not found in PATH.
+echo MUIOGO setup currently supports Python ^>=3.10 and ^<3.13 (recommended: 3.11).
 exit /b 1
 
 :check_version
-for /f "tokens=*" %%i in ('!PYTHON! -c "import sys; print(sys.version_info >= (3, 9))"') do set "PY_OK=%%i"
+for /f "tokens=*" %%i in ('!PYTHON! -c "import sys; print((3, 10) <= sys.version_info[:2] < (3, 13))"') do set "PY_OK=%%i"
 if not "!PY_OK!"=="True" (
-    echo ERROR: Python 3.9+ is required. Found:
+    echo ERROR: Unsupported Python version. Found:
     !PYTHON! --version
+    echo MUIOGO setup currently supports Python ^>=3.10 and ^<3.13.
     exit /b 1
 )
 

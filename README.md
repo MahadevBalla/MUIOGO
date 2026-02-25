@@ -69,15 +69,47 @@ scripts\setup.bat
 Or run the Python script directly:
 
 ```bash
-python scripts/setup_dev.py          # full setup
-python scripts/setup_dev.py --check  # verify only
+# macOS / Linux
+python3.11 scripts/setup_dev.py
+python3.11 scripts/setup_dev.py --check
+
+# Windows (PowerShell / CMD)
+py -3.11 scripts/setup_dev.py
+py -3.11 scripts/setup_dev.py --check
 ```
 
 The script will:
 1. Create a Python virtual environment (`venv/`)
 2. Install Python dependencies from `requirements.txt`
 3. Install GLPK and CBC solvers via your OS package manager
-4. Run verification checks and print clear pass/fail results
+4. Optionally install demo data from a local archive in this repo
+5. Run verification checks and print clear pass/fail results
+
+Current supported Python range for this setup flow is `>=3.10` and `<3.13`
+(recommended: `3.11`).
+
+### Optional demo-data install
+
+MUIOGO now hosts the demo-data archive in this repository at:
+
+`assets/demo-data/CLEWs.Demo.zip`
+
+To install demo data during setup:
+
+```bash
+./scripts/setup.sh --with-demo-data
+```
+
+To force reinstall demo data:
+
+```bash
+./scripts/setup.sh --with-demo-data --force-demo-data --yes
+```
+
+Default behavior is fast:
+- if demo data is already installed, setup skips reinstallation.
+- force mode removes only demo-data targets, not the full repository.
+- if `requirements.txt` is unchanged, setup reuses a hash cache and skips redundant dependency reinstall.
 
 After setup, activate the environment and start the app:
 ```bash
