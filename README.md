@@ -18,16 +18,27 @@ MUIOGO is the integration project to bring the purely Python-based OG-Core model
 
 At the moment, this repository starts from a direct copy baseline of MUIO. The goal of MUIOGO is to evolve that baseline into an integrated OG-CLEWS model that is maintainable and platform-independent.
 
+## Requirements
+
+- Git:
+  - Install: [git-scm.com](https://git-scm.com/downloads)
+- Python 3.11:
+  - macOS (in Terminal): `brew install python@3.11`
+  - Windows (in PowerShell or Command Prompt): `winget install -e --id Python.Python.3.11`
+  - Installer downloads: [python.org macOS](https://www.python.org/downloads/macos/) / [python.org Windows](https://www.python.org/downloads/windows/)
+- GLPK and CBC solvers:
+  - Installed automatically by setup scripts (`./scripts/setup.sh` or `scripts\\setup.bat`)
+
 ## Quick Start
 
-### macOS / Linux
+### macOS / Linux (in Terminal)
 
 ```bash
 ./scripts/setup.sh
 ./scripts/start.sh
 ```
 
-### Windows
+### Windows (in PowerShell or Command Prompt)
 
 ```bat
 scripts\setup.bat

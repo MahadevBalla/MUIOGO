@@ -21,11 +21,13 @@ fi
 PYTHON="python3.11"
 if ! command -v "$PYTHON" &>/dev/null; then
     echo "ERROR: python3.11 was not found in PATH."
+    echo "Install Python 3.11 and re-run setup."
     if [ "$(uname -s)" = "Darwin" ]; then
-        echo "Install it with:"
-        echo "  brew install python@3.11"
+        echo "  In Terminal (Homebrew): brew install python@3.11"
+        echo "  Python.org macOS installer: https://www.python.org/downloads/macos/"
     else
-        echo "Install Python 3.11 with your system package manager, then re-run setup."
+        echo "  Linux package manager (example): sudo apt install python3.11 python3.11-venv"
+        echo "  Python.org downloads: https://www.python.org/downloads/"
     fi
     exit 1
 fi
@@ -33,6 +35,14 @@ fi
 is_py311=$("$PYTHON" -c "import sys; print(sys.version_info[:2] == (3, 11))" 2>/dev/null || echo "False")
 if [ "$is_py311" != "True" ]; then
     echo "ERROR: Found '$($PYTHON --version)', but MUIOGO setup expects Python 3.11."
+    if [ "$(uname -s)" = "Darwin" ]; then
+        echo "Install/upgrade Python 3.11 in Terminal:"
+        echo "  brew install python@3.11"
+        echo "  Python.org macOS installer: https://www.python.org/downloads/macos/"
+    else
+        echo "Install/upgrade Python 3.11 with your package manager."
+        echo "Python.org downloads: https://www.python.org/downloads/"
+    fi
     exit 1
 fi
 

@@ -35,6 +35,8 @@ if %errorlevel% equ 0 (
 
 echo ERROR: Python 3.11 was not found in PATH.
 echo Install Python 3.11, then re-run setup.
+echo   In PowerShell (winget): winget install -e --id Python.Python.3.11
+echo   Python.org Windows installer: https://www.python.org/downloads/windows/
 exit /b 1
 
 :check_version
@@ -43,6 +45,9 @@ if not "!PY_OK!"=="True" (
     echo ERROR: Unsupported Python version. Found:
     !PYTHON! --version
     echo MUIOGO setup expects Python 3.11.
+    echo Install/upgrade Python 3.11:
+    echo   In PowerShell (winget): winget install -e --id Python.Python.3.11
+    echo   Python.org Windows installer: https://www.python.org/downloads/windows/
     exit /b 1
 )
 

@@ -767,10 +767,26 @@ def main() -> int:
 
     current_py = sys.version_info[:2]
     if not _python_supported(current_py):
+        if SYSTEM == "Darwin":
+            install_hint = (
+                "Install Python 3.11 in Terminal: brew install python@3.11\n"
+                "Python.org macOS installer: https://www.python.org/downloads/macos/"
+            )
+        elif SYSTEM == "Windows":
+            install_hint = (
+                "Install Python 3.11 in PowerShell: winget install -e --id Python.Python.3.11\n"
+                "Python.org Windows installer: https://www.python.org/downloads/windows/"
+            )
+        else:
+            install_hint = (
+                "Install Python 3.11 with your package manager.\n"
+                "Python.org downloads: https://www.python.org/downloads/"
+            )
         print(
             f"{RED}{BOLD}Unsupported Python version: {sys.version.split()[0]}{RESET}\n"
             f"MUIOGO setup currently supports Python >={MIN_PYTHON[0]}.{MIN_PYTHON[1]} "
-            f"and <{MAX_PYTHON[0]}.{MAX_PYTHON[1]} (recommended: 3.11)."
+            f"and <{MAX_PYTHON[0]}.{MAX_PYTHON[1]} (recommended: 3.11).\n"
+            f"{install_hint}"
         )
         return 1
 
