@@ -99,6 +99,7 @@ Optional flags:
 MUIOGO now hosts the demo-data archive in this repository at:
 
 `assets/demo-data/CLEWs.Demo.zip`
+`SHA-256: facf4bda703f67b3c8b8697fea19d7d49be72bc2029fc05a68c61fd12ba7edde`
 
 To install demo data during setup:
 
