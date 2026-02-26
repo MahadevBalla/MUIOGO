@@ -4,176 +4,101 @@
 
 **M**odelling **U**ser **I**nterface for **OG**-Core and **O**SeMOSYS
 
-The United Nations Department of Economic and Social Affairs (DESA) has applied open-source modelling tools during the last decade in more than 20 countries —particularly in Small Island Developing States, Land-Locked Countries, and Least Developed Countries— to support policies related to Nationally Determined Contributions (NDCs), climate adaptation, social protection, and fiscal sustainability:
-- CLEWS, built on OSeMOSYS, analyzes interactions and trade-offs across land, energy, and water systems under climate scenarios.
-- OG-Core is a dynamic overlapping-generations macroeconomic model that evaluates long-term fiscal, demographic, and economic policies.
+MUIOGO is the integration project for OG-Core and OSeMOSYS/CLEWS.
+This repository currently starts from a MUIO baseline and is being evolved into
+a maintainable, cross-platform integration workflow.
 
-By linking sectoral resource systems (climate, land, energy, and water) with a dynamic macroeconomic model, the unified framework will allow policymakers to assess both the physical feasibility and economy-wide impacts of climate and development policies in a transparent, reproducible, and low-cost way.
+For project context, see:
+- [Project Background and Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision)
+- [Timeline](https://github.com/EAPD-DRB/MUIOGO/wiki/Timeline)
 
-The project will create a standardized interface and shared execution system linking the two models, enabling integrated analyses that are not currently possible. The enhanced OG–CLEWS framework will be deployed in more than 10 countries, supporting evidence-based policymaking and helping countries advance toward their Sustainable Development Goals through 2030.
+## Quick Start (All Platforms)
 
-See the [Project Background & Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision) and the programme's [Timeline](https://github.com/EAPD-DRB/MUIOGO/wiki/Timeline) for more information.
-
-MUIOGO is the integration project to bring the purely Python-based OG-Core model into MUIO, the GUI for OSeMOSYS (CLEWS).
-
-At the moment, this repository starts from a direct copy baseline of MUIO. The
-goal of MUIOGO is to evolve that baseline into an integrated OG–CLEWS model that is maintainable and
-platform-independent.
-
-If you are new to this repo, start with the current installation notes below.
-
-## Resources
-
-Beyond the purely technical aspects, it is important to get a basic understanding of what both models do:
-- MUIO: https://muio-modelling-user-interface-for-osemosys.readthedocs.io/
-- CLEWS/OSeMOSYS: https://osemosys.readthedocs.io/
-- OG-Core: https://pslmodels.github.io/OG-Core/content/theory/intro.html
-
-Free online trainings are available here:
-- CLEWS: https://capacity.desa.un.org/article/introduction-clews
-- OG-Core: https://capacity.desa.un.org/article/mastering-og-core-model-theory-technical-applications-and-policy-use-cases
-
-## Current installation status
-
-### Windows
-
-MUIO is currently distributed primarily as a Windows desktop installer.
-
-1. Download the latest `.exe` installer from [here](https://github.com/OSeMOSYS/MUIO/releases)
-2. Move the `.exe` file to a folder where you have administrator permissions.
-3. Right-click `MUIO.exe` and select **Run as administrator**.
-4. Wait for installation to complete.
-5. Open the app from the Start Menu if it does not open automatically.
-
-### macOS
-
-Use [MUIO-Mac](https://github.com/SeaCelo/MUIO-Mac) as the current macOS-capable path.
-
-### Platform-independence goal
-
-One of the core goals of MUIOGO is to become platform independent so separate
-platform-specific ports are no longer required.
-
-### Developer setup (all platforms)
-
-A single setup flow prepares Python, dependencies, and solvers on any OS:
+### 1) Setup environment, dependencies, and solvers
 
 ```bash
 # macOS / Linux
-./scripts/setup.sh
+./scripts/setup.sh --with-demo-data
 
 # Windows
-scripts\setup.bat
+scripts\setup.bat --with-demo-data
 ```
 
-Or run the Python script directly:
+Alternative (direct Python entrypoint):
 
 ```bash
 # macOS / Linux
-python3.11 scripts/setup_dev.py
-python3.11 scripts/setup_dev.py --check
+python3.11 scripts/setup_dev.py --with-demo-data
 
 # Windows (PowerShell / CMD)
-py -3.11 scripts/setup_dev.py
-py -3.11 scripts/setup_dev.py --check
+py -3.11 scripts/setup_dev.py --with-demo-data
 ```
 
-The script will:
-1. Create a Python virtual environment (default: `~/.venvs/muiogo`)
-2. Install Python dependencies from `requirements.txt`
-3. Install GLPK and CBC solvers via your OS package manager
-4. Optionally install demo data from a local archive in this repo
-5. Run verification checks and print clear pass/fail results
-
-Current supported Python range for this setup flow is `>=3.10` and `<3.13`
-(recommended: `3.11`).
-
-By default, setup creates the virtual environment outside the repo to avoid
-Codex Desktop performance issues with in-repo `.venv/` or `venv/` folders.
-
-Optional flags:
-- `--venv-dir <path>` to choose a custom venv location
-
-### Optional demo-data install
-
-MUIOGO now hosts the demo-data archive in this repository at:
-
-`assets/demo-data/CLEWs.Demo.zip`
-`SHA-256: facf4bda703f67b3c8b8697fea19d7d49be72bc2029fc05a68c61fd12ba7edde`
-
-To install demo data during setup:
+### 2) Verify setup
 
 ```bash
-./scripts/setup.sh --with-demo-data
+# macOS / Linux
+python3.11 scripts/setup_dev.py --check --with-demo-data
+
+# Windows
+py -3.11 scripts/setup_dev.py --check --with-demo-data
 ```
 
-To force reinstall demo data:
+### 3) Start the app
 
 ```bash
-./scripts/setup.sh --with-demo-data --force-demo-data --yes
-```
-
-Default behavior is fast:
-- if demo data is already installed, setup skips reinstallation.
-- force mode removes only demo-data targets, not the full repository.
-- if `requirements.txt` is unchanged, setup reuses a hash cache and skips redundant dependency reinstall.
-
-After setup, start the app directly with the environment's Python:
-```bash
+# macOS / Linux
 "$HOME/.venvs/muiogo/bin/python" API/app.py
-# Windows (PowerShell):
+
+# Windows (PowerShell)
 # "$env:USERPROFILE\.venvs\muiogo\Scripts\python.exe" API\app.py
-# Open http://127.0.0.1:5002
 ```
 
-## What is in this repository
+Open: `http://127.0.0.1:5002`
+
+## Demo Data
+
+Demo data archive in this repo:
+
+- `assets/demo-data/CLEWs.Demo.zip`
+- `SHA-256: facf4bda703f67b3c8b8697fea19d7d49be72bc2029fc05a68c61fd12ba7edde`
+
+Setup defaults:
+- Creates virtual environment at `~/.venvs/muiogo` (unless overridden).
+- Can install demo data with `--with-demo-data`.
+- Supports forced demo-data reinstall with `--force-demo-data --yes`.
+
+## Repository Layout
 
 - `API/`: Flask backend and run/data endpoints
 - `WebAPP/`: frontend assets served by Flask
 - `WebAPP/DataStorage/`: model inputs, case data, and run outputs
-- `docs/`: user and model documentation sources
+- `docs/`: project and contributor documentation
 
-## For new contributors
+## Contributing
 
-Start here:
-
+Start with:
 - `CONTRIBUTING.md`
 - `docs/GSoC-2026.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DOCS_POLICY.md`
 
-Issue and PR templates:
+Contribution rule:
+- Create (or use) an issue first.
+- Work in a feature branch (for example `feature/<issue-number>-short-description`).
 
+Templates:
 - `.github/ISSUE_TEMPLATE/`
 - `.github/pull_request_template.md`
 
-Contribution rule:
+## Project Boundaries
 
-- Create (or use) an issue first.
-- Implement in a feature branch (for example:
-  `feature/<issue-number>-short-description`).
-
-## Important project boundaries
-
-This repository is downstream and separately managed from upstream `OSeMOSYS/MUIO`.
+This repository is downstream and separately managed from upstream:
 
 - Upstream: `https://github.com/OSeMOSYS/MUIO`
 - This repo: `https://github.com/EAPD-DRB/MUIOGO`
 
-Contributions upstream are welcome, but delivery in MUIOGO **cannot** depend on
-upstream timelines or releases.
-
-`MUIO-Mac` is a separate macOS port effort and can continue in parallel, but
-MUIOGO **cannot** depend on it for delivery decisions.
-
-## Wiki
-
-The wiki is currently used only for high-level background context:
-
-- [Project Background and Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision)
-
-Setup, architecture, contribution process, and governance docs are maintained in
-this repository.
+Delivery in MUIOGO cannot depend on upstream timelines or release cycles.
 
 ## License
 
