@@ -4,85 +4,46 @@
 
 **M**odelling **U**ser **I**nterface for **OG**-Core and **O**SeMOSYS
 
-MUIOGO is the integration project for OG-Core and OSeMOSYS/CLEWS.
-This repository currently starts from a MUIO baseline and is being evolved into
-a maintainable, cross-platform integration workflow.
+The United Nations Department of Economic and Social Affairs (DESA) has applied open-source modelling tools during the last decade in more than 20 countries —particularly in Small Island Developing States, Land-Locked Countries, and Least Developed Countries— to support policies related to Nationally Determined Contributions (NDCs), climate adaptation, social protection, and fiscal sustainability:
+- CLEWS, built on OSeMOSYS, analyzes interactions and trade-offs across land, energy, and water systems under climate scenarios.
+- OG-Core is a dynamic overlapping-generations macroeconomic model that evaluates long-term fiscal, demographic, and economic policies.
 
-For project context, see:
-- [Project Background and Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision)
-- [Timeline](https://github.com/EAPD-DRB/MUIOGO/wiki/Timeline)
+By linking sectoral resource systems (climate, land, energy, and water) with a dynamic macroeconomic model, the unified framework will allow policymakers to assess both the physical feasibility and economy-wide impacts of climate and development policies in a transparent, reproducible, and low-cost way.
 
-## Quick Start (macOS / Linux)
+The project will create a standardized interface and shared execution system linking the two models, enabling integrated analyses that are not currently possible. The enhanced OG-CLEWS framework will be deployed in more than 10 countries, supporting evidence-based policymaking and helping countries advance toward their Sustainable Development Goals through 2030.
 
-### 1) Leave any active conda environment
+See the [Project Background & Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision) and the programme's [Timeline](https://github.com/EAPD-DRB/MUIOGO/wiki/Timeline) for more information.
 
-```bash
-conda deactivate
-```
+MUIOGO is the integration project to bring the purely Python-based OG-Core model into MUIO, the GUI for OSeMOSYS (CLEWS).
 
-If your prompt still shows `(base)` or another conda env, run `conda deactivate` again.
+At the moment, this repository starts from a direct copy baseline of MUIO. The goal of MUIOGO is to evolve that baseline into an integrated OG-CLEWS model that is maintainable and platform-independent.
 
-### 2) Ensure Python 3.11 is installed
+## Quick Start
 
-```bash
-python3.11 --version
-```
-
-If missing on macOS:
-
-```bash
-brew install python@3.11
-```
-
-### 3) Run setup (venv + dependencies + solvers + demo data)
+### macOS / Linux
 
 ```bash
 ./scripts/setup.sh
-```
-
-Optional: skip demo data
-
-```bash
-./scripts/setup.sh --no-demo-data
-```
-
-### 4) Start the app (browser opens automatically)
-
-```bash
 ./scripts/start.sh
 ```
 
-### 5) Optional verification check
-
-```bash
-./scripts/setup.sh --check
-```
-
-## Quick Start (Windows)
+### Windows
 
 ```bat
 scripts\setup.bat
 scripts\start.bat
 ```
 
-Optional: skip demo data
-
-```bat
-scripts\setup.bat --no-demo-data
-```
+For setup options, use the "--help" flag:
+- macOS / Linux: `./scripts/setup.sh --help`
+- Windows: `scripts\setup.bat --help`
 
 ## Demo Data
 
-Demo data archive in this repo:
+- Archive: `assets/demo-data/CLEWs.Demo.zip`
+- SHA-256: `facf4bda703f67b3c8b8697fea19d7d49be72bc2029fc05a68c61fd12ba7edde`
 
-- `assets/demo-data/CLEWs.Demo.zip`
-- `SHA-256: facf4bda703f67b3c8b8697fea19d7d49be72bc2029fc05a68c61fd12ba7edde`
-
-Setup defaults:
-- Creates virtual environment at `~/.venvs/muiogo` (unless overridden).
-- Installs demo data by default.
-- Supports demo-data opt-out with `--no-demo-data`.
-- Supports forced demo-data reinstall with `--force-demo-data --yes`.
+Setup installs demo data by default.
 
 ## Repository Layout
 
