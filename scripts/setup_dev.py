@@ -6,15 +6,15 @@ Sets up a complete development environment for MUIOGO:
   1. Creates or validates a Python virtual environment (venv)
   2. Installs Python dependencies from requirements.txt
   3. Installs solver dependencies (GLPK, CBC) via OS package managers
-  4. Optionally installs demo data from local archive
+  4. Installs demo data from local archive (default; can be skipped)
   5. Runs post-setup verification checks
 
 Usage:
     python scripts/setup_dev.py          # full setup
+    python scripts/setup_dev.py --no-demo-data
     python scripts/setup_dev.py --check  # verification only (skip install)
     python scripts/setup_dev.py --venv-dir ~/my-envs/muiogo
-    python scripts/setup_dev.py --with-demo-data
-    python scripts/setup_dev.py --with-demo-data --force-demo-data --yes
+    python scripts/setup_dev.py --force-demo-data --yes
 
 Supports: macOS, Linux (apt/dnf/pacman), Windows
 
@@ -97,6 +97,11 @@ def _print_fail(label: str, detail: str = "") -> None:
 def _print_warn(label: str, detail: str = "") -> None:
     suffix = f"  ({detail})" if detail else ""
     print(f"  {YELLOW}[WARN]{RESET} {label}{suffix}")
+
+
+def _print_skipped(label: str, detail: str = "") -> None:
+    suffix = f"  ({detail})" if detail else ""
+    print(f"  {YELLOW}[SKIPPED]{RESET} {label}{suffix}")
 
 
 def _run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
@@ -208,7 +213,7 @@ def _demo_data_paths_to_remove() -> list[Path]:
 
 
 def install_demo_data(force: bool, yes: bool) -> bool:
-    _print_header("Optional demo data")
+    _print_header("Step 4: Demo data")
 
     if not DEMO_DATA_ARCHIVE.exists():
         _print_fail("Demo-data archive not found", str(DEMO_DATA_ARCHIVE))
@@ -269,13 +274,13 @@ def install_demo_data(force: bool, yes: bool) -> bool:
 
 
 def check_demo_data() -> bool:
-    _print_header("Optional demo data (check)")
+    _print_header("Step 4: Demo data (check)")
     if demo_data_present():
         _print_pass("Demo data present", str(DEMO_DATA_REQUIRED_DIRS[0]))
         return True
     _print_fail(
         "Demo data not found",
-        "Run setup with --with-demo-data (or --with-demo-data --force-demo-data --yes).",
+        "Run setup (default installs demo data), or use --force-demo-data --yes to reinstall.",
     )
     return False
 
@@ -529,12 +534,12 @@ def _print_solver_manual_instructions() -> None:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Step 4 – Post-setup verification
+# Step 5 – Post-setup verification
 # ──────────────────────────────────────────────────────────────────────────────
 
 def run_checks() -> bool:
     """Run all verification checks and return True if everything passes."""
-    _print_header("Verification checks")
+    _print_header("Step 5: Verification checks")
 
     all_ok = True
     venv_python = _venv_python()
@@ -652,46 +657,48 @@ def run_checks() -> bool:
 # Summary and next steps
 # ──────────────────────────────────────────────────────────────────────────────
 
-def _print_summary(results: dict[str, bool]) -> None:
+def _print_summary(results: dict[str, tuple[bool, str]]) -> None:
     """Print a final summary table and actionable next steps."""
     _print_header("Setup Summary")
 
-    all_ok = all(results.values())
+    all_ok = all(passed for passed, _ in results.values())
 
-    for step, passed in results.items():
+    for step, (passed, detail) in results.items():
+        if detail.lower().startswith("skipped"):
+            _print_skipped(step, detail)
+            continue
         if passed:
-            _print_pass(step)
+            _print_pass(step, detail)
         else:
-            _print_fail(step)
+            _print_fail(step, detail)
 
     print()
 
     if all_ok:
-        activate_cmd = (
-            f'"{VENV_DIR / "Scripts" / "activate"}"' if SYSTEM == "Windows"
-            else f'source "{VENV_DIR / "bin" / "activate"}"'
-        )
+        start_cmd = r'scripts\start.bat' if SYSTEM == "Windows" else "./scripts/start.sh"
         run_cmd = f'"{_venv_python()}" "{PROJECT_ROOT / "API" / "app.py"}"'
         print(textwrap.dedent(f"""\
         {GREEN}{BOLD}All checks passed! Your MUIOGO environment is ready.{RESET}
 
         Next steps:
-          1. Start the app directly:
+          1. Start the app (opens browser automatically):
+               {start_cmd}
+          2. Stop the app with CTRL+C in the terminal.
+          3. Advanced/manual start (without launcher):
                {run_cmd}
-          2. (Optional) activate the virtual environment:
-               {activate_cmd}
-          3. Open http://127.0.0.1:5002 in your browser.
         """))
     else:
+        check_cmd = r'scripts\setup.bat --check' if SYSTEM == "Windows" else "./scripts/setup.sh --check"
+        setup_cmd = r'scripts\setup.bat' if SYSTEM == "Windows" else "./scripts/setup.sh"
         print(textwrap.dedent(f"""\
         {RED}{BOLD}Some checks failed.{RESET}
 
         Next steps:
           - Review the [FAIL] items above.
           - Fix the issues and re-run:
-               python scripts/setup_dev.py --check
+               {check_cmd}
           - If solver install failed, see manual instructions above or run:
-               python scripts/setup_dev.py
+               {setup_cmd}
             after installing the solvers manually.
           - For help, see CONTRIBUTING.md or open an issue.
         """))
@@ -720,7 +727,14 @@ def main() -> int:
     parser.add_argument(
         "--with-demo-data",
         action="store_true",
-        help="Install demo data from local archive (or verify in --check mode).",
+        dest="with_demo_data",
+        help="Install demo data from local archive (default behavior).",
+    )
+    parser.add_argument(
+        "--no-demo-data",
+        action="store_false",
+        dest="with_demo_data",
+        help="Skip demo-data installation.",
     )
     parser.add_argument(
         "--force-demo-data",
@@ -732,7 +746,16 @@ def main() -> int:
         action="store_true",
         help="Skip interactive confirmation prompts (required for non-interactive force reinstall).",
     )
+    parser.set_defaults(with_demo_data=True)
     args = parser.parse_args()
+
+    conda_env = os.environ.get("CONDA_DEFAULT_ENV", "").strip()
+    if conda_env:
+        print(
+            f"{RED}{BOLD}Conda environment is active: {conda_env}{RESET}\n"
+            "Run 'conda deactivate' (repeat until no conda env is active), then run setup again."
+        )
+        return 1
 
     if args.force_demo_data:
         args.with_demo_data = True
@@ -768,32 +791,57 @@ def main() -> int:
         demo_ok = True
         if args.with_demo_data:
             demo_ok = check_demo_data()
+        else:
+            _print_header("Step 4: Demo data (check)")
+            if demo_data_present():
+                _print_warn("Demo data check skipped (--no-demo-data)", "demo data currently present")
+            else:
+                _print_warn("Demo data check skipped (--no-demo-data)", "demo data not installed")
         check_ok = run_checks()
         return 0 if demo_ok and check_ok else 1
 
-    results: dict[str, bool] = {}
+    results: dict[str, tuple[bool, str]] = {}
 
-    results["Python virtual environment"] = setup_venv()
+    step1_ok = setup_venv()
+    results["Python virtual environment"] = (step1_ok, str(VENV_DIR))
 
-    if results["Python virtual environment"]:
-        results["Python dependencies"] = install_python_deps()
+    if step1_ok:
+        results["Python dependencies"] = (install_python_deps(), "")
     else:
-        results["Python dependencies"] = False
+        results["Python dependencies"] = (False, "skipped because venv setup failed")
         _print_fail("Skipping Python deps (venv setup failed)")
 
-    results["Solver dependencies (GLPK & CBC)"] = install_solvers()
+    results["Solver dependencies (GLPK & CBC)"] = (install_solvers(), "")
 
+    demo_detail = ""
     if args.with_demo_data:
-        results["Demo data (optional)"] = install_demo_data(
+        had_demo_before = demo_data_present()
+        demo_ok = install_demo_data(
             force=args.force_demo_data,
             yes=args.yes,
         )
+        if demo_ok:
+            if had_demo_before and not args.force_demo_data:
+                demo_detail = "already installed"
+            elif args.force_demo_data:
+                demo_detail = "reinstalled"
+            else:
+                demo_detail = "installed"
+        else:
+            demo_detail = "failed (see logs above)"
+        results["Demo data"] = (demo_ok, demo_detail)
+    else:
+        if demo_data_present():
+            demo_detail = "skipped (--no-demo-data); already present"
+        else:
+            demo_detail = "skipped (--no-demo-data); not installed"
+        results["Demo data"] = (True, demo_detail)
 
-    results["Verification checks"] = run_checks()
+    results["Verification checks"] = (run_checks(), "")
 
     _print_summary(results)
 
-    return 0 if all(results.values()) else 1
+    return 0 if all(passed for passed, _ in results.values()) else 1
 
 
 if __name__ == "__main__":

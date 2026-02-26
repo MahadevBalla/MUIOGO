@@ -3,32 +3,39 @@
 # MUIOGO Development Environment Setup (macOS / Linux)
 #
 # Usage:
-#   ./scripts/setup.sh          # full setup
-#   ./scripts/setup.sh --check  # verification only
+#   ./scripts/setup.sh                  # full setup (installs demo data by default)
+#   ./scripts/setup.sh --no-demo-data   # skip demo data
+#   ./scripts/setup.sh --check          # verification only
 # ──────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Find a suitable Python 3 interpreter (supported range: >=3.10,<3.13)
-PYTHON=""
-for candidate in python3.12 python3.11 python3.10 python3 python; do
-    if command -v "$candidate" &>/dev/null; then
-        version=$("$candidate" -c "import sys; print((3, 10) <= sys.version_info[:2] < (3, 13))" 2>/dev/null || echo "False")
-        if [ "$version" = "True" ]; then
-            PYTHON="$candidate"
-            break
-        fi
-    fi
-done
-
-if [ -z "$PYTHON" ]; then
-    echo "ERROR: A supported Python interpreter was not found in PATH."
-    echo "MUIOGO setup currently supports Python >=3.10 and <3.13 (recommended: 3.11)."
+if [ -n "${CONDA_DEFAULT_ENV:-}" ]; then
+    echo "ERROR: Conda environment '${CONDA_DEFAULT_ENV}' is active."
+    echo "Run 'conda deactivate' (repeat until your prompt no longer shows '(base)' or a conda env), then re-run setup."
     exit 1
 fi
 
-echo "Using Python: $($PYTHON --version) at $(command -v $PYTHON)"
+PYTHON="python3.11"
+if ! command -v "$PYTHON" &>/dev/null; then
+    echo "ERROR: python3.11 was not found in PATH."
+    if [ "$(uname -s)" = "Darwin" ]; then
+        echo "Install it with:"
+        echo "  brew install python@3.11"
+    else
+        echo "Install Python 3.11 with your system package manager, then re-run setup."
+    fi
+    exit 1
+fi
+
+is_py311=$("$PYTHON" -c "import sys; print(sys.version_info[:2] == (3, 11))" 2>/dev/null || echo "False")
+if [ "$is_py311" != "True" ]; then
+    echo "ERROR: Found '$($PYTHON --version)', but MUIOGO setup expects Python 3.11."
+    exit 1
+fi
+
+echo "Using Python: $($PYTHON --version) at $(command -v "$PYTHON")"
 
 exec "$PYTHON" "$SCRIPT_DIR/setup_dev.py" "$@"

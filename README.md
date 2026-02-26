@@ -12,49 +12,64 @@ For project context, see:
 - [Project Background and Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Project-Background-and-Vision)
 - [Timeline](https://github.com/EAPD-DRB/MUIOGO/wiki/Timeline)
 
-## Quick Start (All Platforms)
+## Quick Start (macOS / Linux)
 
-### 1) Setup environment, dependencies, and solvers
-
-```bash
-# macOS / Linux
-./scripts/setup.sh --with-demo-data
-
-# Windows
-scripts\setup.bat --with-demo-data
-```
-
-Alternative (direct Python entrypoint):
+### 1) Leave any active conda environment
 
 ```bash
-# macOS / Linux
-python3.11 scripts/setup_dev.py --with-demo-data
-
-# Windows (PowerShell / CMD)
-py -3.11 scripts/setup_dev.py --with-demo-data
+conda deactivate
 ```
 
-### 2) Verify setup
+If your prompt still shows `(base)` or another conda env, run `conda deactivate` again.
+
+### 2) Ensure Python 3.11 is installed
 
 ```bash
-# macOS / Linux
-python3.11 scripts/setup_dev.py --check --with-demo-data
-
-# Windows
-py -3.11 scripts/setup_dev.py --check --with-demo-data
+python3.11 --version
 ```
 
-### 3) Start the app
+If missing on macOS:
 
 ```bash
-# macOS / Linux
-"$HOME/.venvs/muiogo/bin/python" API/app.py
-
-# Windows (PowerShell)
-# "$env:USERPROFILE\.venvs\muiogo\Scripts\python.exe" API\app.py
+brew install python@3.11
 ```
 
-Open: `http://127.0.0.1:5002`
+### 3) Run setup (venv + dependencies + solvers + demo data)
+
+```bash
+./scripts/setup.sh
+```
+
+Optional: skip demo data
+
+```bash
+./scripts/setup.sh --no-demo-data
+```
+
+### 4) Start the app (browser opens automatically)
+
+```bash
+./scripts/start.sh
+```
+
+### 5) Optional verification check
+
+```bash
+./scripts/setup.sh --check
+```
+
+## Quick Start (Windows)
+
+```bat
+scripts\setup.bat
+scripts\start.bat
+```
+
+Optional: skip demo data
+
+```bat
+scripts\setup.bat --no-demo-data
+```
 
 ## Demo Data
 
@@ -65,7 +80,8 @@ Demo data archive in this repo:
 
 Setup defaults:
 - Creates virtual environment at `~/.venvs/muiogo` (unless overridden).
-- Can install demo data with `--with-demo-data`.
+- Installs demo data by default.
+- Supports demo-data opt-out with `--no-demo-data`.
 - Supports forced demo-data reinstall with `--force-demo-data --yes`.
 
 ## Repository Layout
