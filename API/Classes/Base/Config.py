@@ -49,8 +49,6 @@ os.chmod(DATA_STORAGE, 0o777)
 # EXTRACT_FOLDER = Path(OSEMOSYS_ROOT, "")
 # SOLVERs_FOLDER = Path(OSEMOSYS_ROOT, 'WebAPP', 'SOLVERs')
 
-os.chmod(DATA_STORAGE, 0o777)
-
 HEROKU_DEPLOY = 0
 AWS_SYNC = 0
 
@@ -255,4 +253,3 @@ PARAMETERS_C_full = {
         'SpecifiedDemandProfile': ['r','f','y','l','SpecifiedDemandProfile'],
         'ResidualStorageCapacity': ['r','s','y','ResidualStorageCapacity'],
     }
-

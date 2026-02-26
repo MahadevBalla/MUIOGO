@@ -86,6 +86,37 @@ class Osemosys():
         self.VARS = a
 
     @staticmethod
+    def _solver_binary_names(binary_name: str):
+        names = [binary_name]
+        if platform.system() == "Windows" and not binary_name.lower().endswith(".exe"):
+            names.insert(0, f"{binary_name}.exe")
+        return names
+
+    @staticmethod
+    def _find_solver_binary(path: Path, binary_name: str, recursive: bool = False):
+        binary_names = Osemosys._solver_binary_names(binary_name)
+
+        if path.is_file():
+            lowered_names = {name.lower() for name in binary_names}
+            return path if path.name.lower() in lowered_names else None
+
+        if not path.is_dir():
+            return None
+
+        for name in binary_names:
+            candidate = path / name
+            if candidate.is_file():
+                return candidate
+
+        if recursive:
+            for name in binary_names:
+                for candidate in path.rglob(name):
+                    if candidate.is_file():
+                        return candidate
+
+        return None
+
+    @staticmethod
     def _resolve_solver_folder(env_var: str, binary_name: str, bundled_path: Path) -> Path:
         """Resolve a solver binary folder using a three-tier priority chain:
 
@@ -96,17 +127,30 @@ class Osemosys():
         Raises RuntimeError at startup if no solver can be located,
         instead of silently storing a wrong path and failing mid-run.
         """
-        env_val = os.environ.get(env_var, "").strip()
+        env_val = os.environ.get(env_var, "").strip().strip("\"'")
         if env_val:
-            return Path(env_val)
-        which = shutil.which(binary_name)
-        if which:
-            return Path(which).parent
-        if bundled_path.exists():
-            return bundled_path
+            env_path = Path(env_val).expanduser()
+            env_binary = Osemosys._find_solver_binary(env_path, binary_name, recursive=False)
+            if env_binary is not None:
+                return env_binary.resolve().parent
+
+            raise RuntimeError(
+                f"{env_var} is set to '{env_val}', but no '{binary_name}' binary was found there.\n"
+                f"Set {env_var} to the solver executable or to the directory containing it."
+            )
+
+        for solver_name in Osemosys._solver_binary_names(binary_name):
+            which = shutil.which(solver_name)
+            if which:
+                return Path(which).resolve().parent
+
+        bundled_binary = Osemosys._find_solver_binary(bundled_path, binary_name, recursive=True)
+        if bundled_binary is not None:
+            return bundled_binary.resolve().parent
+
         raise RuntimeError(
             f"Solver binary '{binary_name}' could not be found.\n"
-            f"Set {env_var} in your environment or install '{binary_name}' on PATH."
+            f"Set {env_var}, install '{binary_name}' on PATH, or provide bundled binaries under '{bundled_path}'."
         )
 
     def getParamDefaultValues(self):
@@ -898,4 +942,4 @@ class Osemosys():
                         obj[k] = value
             File.writeFile( jsonData, jsonPath)
         except(IOError):
-            raise IOError           
+            raise IOError
