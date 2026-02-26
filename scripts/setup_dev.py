@@ -6,16 +6,26 @@ Sets up a complete development environment for MUIOGO:
   1. Creates or validates a Python virtual environment (venv)
   2. Installs Python dependencies from requirements.txt
   3. Installs solver dependencies (GLPK, CBC) via OS package managers
-  4. Runs post-setup verification checks
+  4. Optionally installs demo data from local archive
+  5. Runs post-setup verification checks
 
 Usage:
     python scripts/setup_dev.py          # full setup
     python scripts/setup_dev.py --check  # verification only (skip install)
+    python scripts/setup_dev.py --venv-dir ~/my-envs/muiogo
+    python scripts/setup_dev.py --with-demo-data
+    python scripts/setup_dev.py --with-demo-data --force-demo-data --yes
 
 Supports: macOS, Linux (apt/dnf/pacman), Windows
+
+Python support: >=3.10 and <3.13 (recommended: 3.11)
+
+Default venv location: ~/.venvs/muiogo (outside repo)
 """
 
 import argparse
+import hashlib
+import json
 import os
 import platform
 import shutil
@@ -23,6 +33,7 @@ import subprocess
 import sys
 import textwrap
 import venv
+import zipfile
 from pathlib import Path
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -30,9 +41,16 @@ from pathlib import Path
 # ──────────────────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-VENV_DIR = PROJECT_ROOT / "venv"
+VENV_DIR = (Path.home() / ".venvs" / "muiogo").resolve()
 REQUIREMENTS = PROJECT_ROOT / "requirements.txt"
 SYSTEM = platform.system()  # 'Darwin', 'Linux', 'Windows'
+MIN_PYTHON = (3, 10)
+MAX_PYTHON = (3, 13)  # exclusive
+DATA_STORAGE_DIR = PROJECT_ROOT / "WebAPP" / "DataStorage"
+DEMO_DATA_ARCHIVE = PROJECT_ROOT / "assets" / "demo-data" / "CLEWs.Demo.zip"
+DEMO_DATA_ARCHIVE_SHA256 = "facf4bda703f67b3c8b8697fea19d7d49be72bc2029fc05a68c61fd12ba7edde"
+DEMO_DATA_REQUIRED_DIRS = [DATA_STORAGE_DIR / "CLEWs Demo"]
+DEMO_DATA_MARKER = DATA_STORAGE_DIR / ".demo_data_installed.json"
 
 # Core packages that must be importable after setup
 REQUIRED_IMPORTS = [
@@ -92,6 +110,176 @@ def _which(name: str) -> str | None:
     return shutil.which(name)
 
 
+def _python_supported(version: tuple[int, int]) -> bool:
+    return MIN_PYTHON <= version < MAX_PYTHON
+
+
+def _requirements_hash_file() -> Path:
+    return VENV_DIR / ".requirements.sha256"
+
+
+def _resolve_venv_dir(venv_dir_arg: str | None) -> Path:
+    if venv_dir_arg:
+        return Path(venv_dir_arg).expanduser().resolve()
+
+    env_override = os.environ.get("MUIOGO_VENV_DIR", "").strip()
+    if env_override:
+        return Path(env_override).expanduser().resolve()
+
+    return (Path.home() / ".venvs" / "muiogo").resolve()
+
+
+def _sha256(path: Path) -> str:
+    hasher = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def _read_requirements_hash() -> str | None:
+    hash_file = _requirements_hash_file()
+    if not hash_file.exists():
+        return None
+    try:
+        return hash_file.read_text(encoding="utf-8").strip() or None
+    except Exception:
+        return None
+
+
+def _read_demo_marker() -> dict | None:
+    if not DEMO_DATA_MARKER.exists():
+        return None
+    try:
+        return json.loads(DEMO_DATA_MARKER.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def demo_data_present() -> bool:
+    """Fast presence check only: marker + required directory existence."""
+    if _read_demo_marker() is None:
+        return False
+    return all(path.exists() and path.is_dir() for path in DEMO_DATA_REQUIRED_DIRS)
+
+
+def _confirm_force_demo_data(force: bool, yes: bool) -> bool:
+    if not force:
+        return True
+    if yes:
+        return True
+    if not sys.stdin.isatty():
+        _print_fail(
+            "Refusing forced demo-data reinstall in non-interactive mode",
+            "Re-run with --force-demo-data --yes to confirm.",
+        )
+        return False
+    print()
+    print("  [WARN] --force-demo-data will remove existing demo-data folders before reinstall.")
+    answer = input("  Type REINSTALL to continue: ").strip()
+    if answer != "REINSTALL":
+        _print_warn("Demo-data reinstall cancelled by user")
+        return False
+    return True
+
+
+def _safe_extract_zip(zf: zipfile.ZipFile, target_dir: Path) -> None:
+    target_root = target_dir.resolve()
+    for member in zf.infolist():
+        member_path = target_root / member.filename
+        resolved = member_path.resolve()
+        if not str(resolved).startswith(str(target_root)):
+            raise RuntimeError(f"Unsafe zip entry path: {member.filename}")
+    zf.extractall(target_root)
+
+
+def _demo_data_paths_to_remove() -> list[Path]:
+    marker = _read_demo_marker() or {}
+    paths: list[Path] = []
+    marker_paths = marker.get("installed_paths", [])
+    for rel in marker_paths:
+        p = (PROJECT_ROOT / rel).resolve()
+        if str(p).startswith(str(DATA_STORAGE_DIR.resolve())):
+            paths.append(p)
+    for p in DEMO_DATA_REQUIRED_DIRS:
+        if p not in paths:
+            paths.append(p)
+    return paths
+
+
+def install_demo_data(force: bool, yes: bool) -> bool:
+    _print_header("Optional demo data")
+
+    if not DEMO_DATA_ARCHIVE.exists():
+        _print_fail("Demo-data archive not found", str(DEMO_DATA_ARCHIVE))
+        return False
+
+    if not _confirm_force_demo_data(force=force, yes=yes):
+        return False
+
+    if demo_data_present() and not force:
+        _print_pass("Demo data already installed", str(DEMO_DATA_REQUIRED_DIRS[0]))
+        return True
+
+    if force:
+        targets = [p for p in _demo_data_paths_to_remove() if p.exists()]
+        if targets:
+            print("  Removing existing demo-data targets:")
+            for target in targets:
+                print(f"    - {target}")
+        for target in targets:
+            if target.is_dir():
+                shutil.rmtree(target)
+            else:
+                target.unlink()
+        if DEMO_DATA_MARKER.exists():
+            DEMO_DATA_MARKER.unlink()
+
+    print("  Verifying demo-data archive checksum ...")
+    current_sha = _sha256(DEMO_DATA_ARCHIVE)
+    if current_sha != DEMO_DATA_ARCHIVE_SHA256:
+        _print_fail(
+            "Demo-data checksum mismatch",
+            f"expected {DEMO_DATA_ARCHIVE_SHA256}, got {current_sha}",
+        )
+        return False
+    _print_pass("Demo-data archive checksum", current_sha)
+
+    print("  Extracting demo data archive ...")
+    try:
+        with zipfile.ZipFile(DEMO_DATA_ARCHIVE, "r") as zf:
+            _safe_extract_zip(zf, PROJECT_ROOT)
+    except Exception as exc:
+        _print_fail("Failed to extract demo-data archive", str(exc))
+        return False
+
+    if not all(path.exists() and path.is_dir() for path in DEMO_DATA_REQUIRED_DIRS):
+        missing = [str(path) for path in DEMO_DATA_REQUIRED_DIRS if not path.exists()]
+        _print_fail("Demo data extraction incomplete", ", ".join(missing))
+        return False
+
+    marker_data = {
+        "archive": str(DEMO_DATA_ARCHIVE.relative_to(PROJECT_ROOT)),
+        "archive_sha256": DEMO_DATA_ARCHIVE_SHA256,
+        "installed_paths": [str(path.relative_to(PROJECT_ROOT)) for path in DEMO_DATA_REQUIRED_DIRS],
+    }
+    DEMO_DATA_MARKER.write_text(json.dumps(marker_data, indent=2), encoding="utf-8")
+    _print_pass("Demo data installed", str(DEMO_DATA_REQUIRED_DIRS[0]))
+    return True
+
+
+def check_demo_data() -> bool:
+    _print_header("Optional demo data (check)")
+    if demo_data_present():
+        _print_pass("Demo data present", str(DEMO_DATA_REQUIRED_DIRS[0]))
+        return True
+    _print_fail(
+        "Demo data not found",
+        "Run setup with --with-demo-data (or --with-demo-data --force-demo-data --yes).",
+    )
+    return False
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Step 1 – Python virtual environment
 # ──────────────────────────────────────────────────────────────────────────────
@@ -112,6 +300,12 @@ def _venv_pip() -> Path:
 def setup_venv() -> bool:
     """Create a Python venv if one does not already exist."""
     _print_header("Step 1: Python virtual environment")
+
+    try:
+        VENV_DIR.parent.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        _print_fail("Could not create parent directory for venv", str(exc))
+        return False
 
     if _venv_python().exists():
         print(f"  Virtual environment already exists at {VENV_DIR}")
@@ -141,6 +335,23 @@ def install_python_deps() -> bool:
 
     pip = str(_venv_pip())
     python = str(_venv_python())
+    current_req_hash = _sha256(REQUIREMENTS)
+    cached_req_hash = _read_requirements_hash()
+
+    if cached_req_hash == current_req_hash:
+        # Guard against stale cache file if environment is partially broken.
+        sanity = subprocess.run(
+            [python, "-c", "import flask"],
+            capture_output=True,
+            text=True,
+        )
+        if sanity.returncode == 0:
+            _print_pass("Python dependencies already up to date", "requirements hash unchanged")
+            return True
+        _print_warn(
+            "Dependency cache invalid",
+            "requirements unchanged but import sanity check failed; reinstalling",
+        )
 
     # Upgrade pip first
     _run([python, "-m", "pip", "install", "--upgrade", "pip"],
@@ -156,6 +367,11 @@ def install_python_deps() -> bool:
         _print_fail("pip install failed")
         print(result.stderr[-2000:] if result.stderr else "(no stderr)")
         return False
+
+    try:
+        _requirements_hash_file().write_text(current_req_hash + "\n", encoding="utf-8")
+    except Exception as exc:
+        _print_warn("Could not write requirements cache file", str(exc))
 
     print(f"  {GREEN}Python dependencies installed.{RESET}")
     return True
@@ -318,32 +534,36 @@ def _print_solver_manual_instructions() -> None:
 
 def run_checks() -> bool:
     """Run all verification checks and return True if everything passes."""
-    _print_header("Step 4: Verification checks")
+    _print_header("Verification checks")
 
     all_ok = True
-    python = str(_venv_python())
+    venv_python = _venv_python()
+    python = str(venv_python)
 
     # 4a – venv Python exists
-    if _venv_python().exists():
-        _print_pass("Python venv exists", str(_venv_python()))
+    if venv_python.exists():
+        _print_pass("Python venv exists", str(venv_python))
     else:
-        _print_fail("Python venv not found", str(_venv_python()))
+        _print_fail("Python venv not found", str(venv_python))
         all_ok = False
 
     # 4b – Key Python packages importable
     print()
     print("  Checking Python imports:")
-    for pkg in REQUIRED_IMPORTS:
-        result = subprocess.run(
-            [python, "-c", f"import {pkg}"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode == 0:
-            _print_pass(f"import {pkg}")
-        else:
-            _print_fail(f"import {pkg}", result.stderr.strip().split("\n")[-1])
-            all_ok = False
+    if venv_python.exists():
+        for pkg in REQUIRED_IMPORTS:
+            result = subprocess.run(
+                [python, "-c", f"import {pkg}"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0:
+                _print_pass(f"import {pkg}")
+            else:
+                _print_fail(f"import {pkg}", result.stderr.strip().split("\n")[-1])
+                all_ok = False
+    else:
+        _print_warn("Skipping import checks", "venv is missing; run full setup first")
 
     # 4c – Solver binaries
     print()
@@ -352,31 +572,47 @@ def run_checks() -> bool:
     # GLPK: glpsol --version works normally
     glpsol_path = _which("glpsol")
     if glpsol_path:
-        r = subprocess.run(
-            ["glpsol", "--version"],
-            capture_output=True,
-            text=True,
-        )
-        version_line = (r.stdout or r.stderr or "").strip().split("\n")[0]
-        _print_pass("GLPK (glpsol)", version_line)
+        try:
+            r = subprocess.run(
+                ["glpsol", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            version_line = (r.stdout or r.stderr or "").strip().split("\n")[0]
+            if r.returncode == 0:
+                _print_pass("GLPK (glpsol)", version_line)
+            else:
+                _print_fail("GLPK (glpsol)", f"exit={r.returncode}; {version_line}")
+                all_ok = False
+        except subprocess.TimeoutExpired:
+            _print_fail("GLPK (glpsol)", "timed out while checking solver")
+            all_ok = False
     else:
         _print_fail("GLPK (glpsol)", "'glpsol' not found in PATH")
         all_ok = False
 
-    # CBC: `cbc --version` opens an interactive prompt, so pipe "quit" instead
+    # CBC: probe with -stop for a non-interactive check.
     cbc_path = _which("cbc")
     if cbc_path:
-        r = subprocess.run(
-            ["cbc"],
-            input="quit\n",
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        # The first line is "Welcome to the CBC MILP Solver", version on line 2
-        lines = (r.stdout or "").strip().split("\n")
-        version_info = lines[1].strip() if len(lines) > 1 else lines[0].strip()
-        _print_pass("CBC", version_info)
+        try:
+            r = subprocess.run(
+                ["cbc", "-stop"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            output = (r.stdout or r.stderr or "").strip()
+            lines = [line.strip() for line in output.splitlines() if line.strip()]
+            version_info = lines[1] if len(lines) > 1 else (lines[0] if lines else "cbc responded")
+            if r.returncode == 0:
+                _print_pass("CBC", version_info)
+            else:
+                _print_fail("CBC", f"exit={r.returncode}; {version_info}")
+                all_ok = False
+        except subprocess.TimeoutExpired:
+            _print_fail("CBC", "timed out while checking solver")
+            all_ok = False
     else:
         _print_fail("CBC", "'cbc' not found in PATH")
         all_ok = False
@@ -384,27 +620,30 @@ def run_checks() -> bool:
     # 4d – Basic app startup check (import the Flask app module)
     print()
     print("  Checking app startup:")
-    startup_check = subprocess.run(
-        [
-            python, "-c",
-            (
-                "import sys, os; "
-                f"os.chdir({str(PROJECT_ROOT)!r}); "
-                "sys.path.insert(0, 'API'); "
-                "from flask import Flask; "
-                "print('Flask app module loadable')"
-            ),
-        ],
-        capture_output=True,
-        text=True,
-        cwd=str(PROJECT_ROOT),
-    )
-    if startup_check.returncode == 0:
-        _print_pass("Flask app module loads without error")
+    if venv_python.exists():
+        startup_check = subprocess.run(
+            [
+                python, "-c",
+                (
+                    "import sys; "
+                    f"sys.path.insert(0, {str(PROJECT_ROOT / 'API')!r}); "
+                    "import app as muiogo_app; "
+                    "assert hasattr(muiogo_app, 'app'); "
+                    "print('API app module loadable')"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(PROJECT_ROOT),
+        )
+        if startup_check.returncode == 0:
+            _print_pass("Flask app module loads without error")
+        else:
+            err = startup_check.stderr.strip().split("\n")[-1] if startup_check.stderr else "unknown"
+            _print_fail("Flask app module failed to load", err)
+            all_ok = False
     else:
-        err = startup_check.stderr.strip().split("\n")[-1] if startup_check.stderr else "unknown"
-        _print_fail("Flask app module failed to load", err)
-        all_ok = False
+        _print_warn("Skipping app startup check", "venv is missing; run full setup first")
 
     return all_ok
 
@@ -429,17 +668,18 @@ def _print_summary(results: dict[str, bool]) -> None:
 
     if all_ok:
         activate_cmd = (
-            r"venv\Scripts\activate" if SYSTEM == "Windows"
-            else "source venv/bin/activate"
+            f'"{VENV_DIR / "Scripts" / "activate"}"' if SYSTEM == "Windows"
+            else f'source "{VENV_DIR / "bin" / "activate"}"'
         )
+        run_cmd = f'"{_venv_python()}" "{PROJECT_ROOT / "API" / "app.py"}"'
         print(textwrap.dedent(f"""\
         {GREEN}{BOLD}All checks passed! Your MUIOGO environment is ready.{RESET}
 
         Next steps:
-          1. Activate the virtual environment:
+          1. Start the app directly:
+               {run_cmd}
+          2. (Optional) activate the virtual environment:
                {activate_cmd}
-          2. Start the app:
-               cd API && python app.py
           3. Open http://127.0.0.1:5002 in your browser.
         """))
     else:
@@ -466,20 +706,70 @@ def main() -> int:
         description="MUIOGO cross-platform development environment setup",
     )
     parser.add_argument(
+        "--venv-dir",
+        help=(
+            "Virtual environment directory path. "
+            "Default: ~/.venvs/muiogo (or MUIOGO_VENV_DIR if set)."
+        ),
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="Run verification checks only (skip install steps)",
     )
+    parser.add_argument(
+        "--with-demo-data",
+        action="store_true",
+        help="Install demo data from local archive (or verify in --check mode).",
+    )
+    parser.add_argument(
+        "--force-demo-data",
+        action="store_true",
+        help="Reinstall demo data by deleting existing demo-data targets first.",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip interactive confirmation prompts (required for non-interactive force reinstall).",
+    )
     args = parser.parse_args()
+
+    if args.force_demo_data:
+        args.with_demo_data = True
+
+    global VENV_DIR
+    VENV_DIR = _resolve_venv_dir(
+        venv_dir_arg=args.venv_dir,
+    )
+
+    current_py = sys.version_info[:2]
+    if not _python_supported(current_py):
+        print(
+            f"{RED}{BOLD}Unsupported Python version: {sys.version.split()[0]}{RESET}\n"
+            f"MUIOGO setup currently supports Python >={MIN_PYTHON[0]}.{MIN_PYTHON[1]} "
+            f"and <{MAX_PYTHON[0]}.{MAX_PYTHON[1]} (recommended: 3.11)."
+        )
+        return 1
 
     print(f"\n{BOLD}MUIOGO Development Environment Setup{RESET}")
     print(f"  Platform : {SYSTEM} ({platform.machine()})")
     print(f"  Python   : {sys.version.split()[0]}")
+    print(f"  Support  : >={MIN_PYTHON[0]}.{MIN_PYTHON[1]}, <{MAX_PYTHON[0]}.{MAX_PYTHON[1]}")
     print(f"  Project  : {PROJECT_ROOT}")
+    print(f"  Venv dir : {VENV_DIR}")
+
+    if PROJECT_ROOT.resolve() in VENV_DIR.resolve().parents:
+        _print_warn(
+            "Using in-repo virtual environment",
+            "This can cause high CPU in Codex Desktop. External venv is recommended.",
+        )
 
     if args.check:
-        ok = run_checks()
-        return 0 if ok else 1
+        demo_ok = True
+        if args.with_demo_data:
+            demo_ok = check_demo_data()
+        check_ok = run_checks()
+        return 0 if demo_ok and check_ok else 1
 
     results: dict[str, bool] = {}
 
@@ -492,6 +782,12 @@ def main() -> int:
         _print_fail("Skipping Python deps (venv setup failed)")
 
     results["Solver dependencies (GLPK & CBC)"] = install_solvers()
+
+    if args.with_demo_data:
+        results["Demo data (optional)"] = install_demo_data(
+            force=args.force_demo_data,
+            yes=args.yes,
+        )
 
     results["Verification checks"] = run_checks()
 
