@@ -54,6 +54,77 @@ Use [MUIO-Mac](https://github.com/SeaCelo/MUIO-Mac) as the current macOS-capable
 One of the core goals of MUIOGO is to become platform independent so separate
 platform-specific ports are no longer required.
 
+### Developer setup (all platforms)
+
+A single setup flow prepares Python, dependencies, and solvers on any OS:
+
+```bash
+# macOS / Linux
+./scripts/setup.sh
+
+# Windows
+scripts\setup.bat
+```
+
+Or run the Python script directly:
+
+```bash
+# macOS / Linux
+python3.11 scripts/setup_dev.py
+python3.11 scripts/setup_dev.py --check
+
+# Windows (PowerShell / CMD)
+py -3.11 scripts/setup_dev.py
+py -3.11 scripts/setup_dev.py --check
+```
+
+The script will:
+1. Create a Python virtual environment (default: `~/.venvs/muiogo`)
+2. Install Python dependencies from `requirements.txt`
+3. Install GLPK and CBC solvers via your OS package manager
+4. Optionally install demo data from a local archive in this repo
+5. Run verification checks and print clear pass/fail results
+
+Current supported Python range for this setup flow is `>=3.10` and `<3.13`
+(recommended: `3.11`).
+
+By default, setup creates the virtual environment outside the repo to avoid
+Codex Desktop performance issues with in-repo `.venv/` or `venv/` folders.
+
+Optional flags:
+- `--venv-dir <path>` to choose a custom venv location
+
+### Optional demo-data install
+
+MUIOGO now hosts the demo-data archive in this repository at:
+
+`assets/demo-data/CLEWs.Demo.zip`
+
+To install demo data during setup:
+
+```bash
+./scripts/setup.sh --with-demo-data
+```
+
+To force reinstall demo data:
+
+```bash
+./scripts/setup.sh --with-demo-data --force-demo-data --yes
+```
+
+Default behavior is fast:
+- if demo data is already installed, setup skips reinstallation.
+- force mode removes only demo-data targets, not the full repository.
+- if `requirements.txt` is unchanged, setup reuses a hash cache and skips redundant dependency reinstall.
+
+After setup, start the app directly with the environment's Python:
+```bash
+"$HOME/.venvs/muiogo/bin/python" API/app.py
+# Windows (PowerShell):
+# "$env:USERPROFILE\.venvs\muiogo\Scripts\python.exe" API\app.py
+# Open http://127.0.0.1:5002
+```
+
 ## What is in this repository
 
 - `API/`: Flask backend and run/data endpoints
