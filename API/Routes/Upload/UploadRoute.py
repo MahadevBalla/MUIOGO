@@ -301,8 +301,8 @@ def uploadCaseUnchunked_old():
                                         shutil.rmtree(viewPath)
 
                                     
-                                    os.makedirs(resPath, mode=0o777, exist_ok=False)
-                                    os.makedirs(viewPath, mode=0o777, exist_ok=False)
+                                    os.makedirs(resPath, exist_ok=True)
+                                    os.makedirs(viewPath, exist_ok=True)
                                     resData = {
                                         "osy-cases":[]
                                     }
@@ -470,8 +470,8 @@ def handle_full_zip(file, filepath=None):
                             shutil.rmtree(resPath)
                         if os.path.exists(viewPath):
                             shutil.rmtree(viewPath)
-                        os.makedirs(resPath, mode=0o777, exist_ok=False)
-                        os.makedirs(viewPath, mode=0o777, exist_ok=False)
+                        os.makedirs(resPath, exist_ok=True)
+                        os.makedirs(viewPath, exist_ok=True)
                         resData = {"osy-cases":[]}
                         File.writeFile(resData, resDataPath)
                         viewData = {"osy-views": viewDef}
