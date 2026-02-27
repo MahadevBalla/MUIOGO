@@ -6,9 +6,9 @@ Please complete the following questionnaire so we can keep track of everybody’
 📄 **Apply** [here](https://forms.gle/8Yvw2H6Q7Qw6snSN9)
 
 ---
-# MUIOGO
+<p><img src="assets/MUIOGO_Logo.png" width="50%" align="center"></p>
 
-<img src="assets/UN_Crest.png" width="75" align="left">
+<p><img src="assets/UN_Crest.png" width="75" align="left"></p>
 
 **M**odelling **U**ser **I**nterface for **OG**-Core and **O**SeMOSYS
 
@@ -24,9 +24,9 @@ See the [Project Background & Vision](https://github.com/EAPD-DRB/MUIOGO/wiki/Pr
 
 MUIOGO is the integration project to bring the purely Python-based OG-Core model into MUIO, the GUI for OSeMOSYS (CLEWS).
 
-At the moment, this repository starts from a direct copy baseline of MUIO. The
-goal of MUIOGO is to evolve that baseline into an integrated OG–CLEWS model that is maintainable and
-platform-independent.
+❗️For now, the app will run *locallly* in a computer. In the future, the app may be hosted on a server for public access and this should be a consideration in its development to ensure future scalability. But, as of today, the initial target is for a downloadable app that every user will run locally in their machines without needing an internet connection.
+
+At the moment, this repository starts from a direct copy baseline of MUIO. The goal of MUIOGO is to evolve that baseline into an integrated OG–CLEWS model that is maintainable and platform-independent.
 
 If you are new to this repo, start with the current installation notes below.
 
