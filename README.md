@@ -1,3 +1,11 @@
+# 🎓 Applications for MUIOGO Are Now Open!
+
+Please complete the following questionnaire so we can keep track of everybody’s application in a structured way:
+
+🗓 **Deadline**: 16 March  
+📄 **Apply** [here](https://forms.gle/8Yvw2H6Q7Qw6snSN9)
+
+---
 # MUIOGO
 
 <img src="assets/UN_Crest.png" width="75" align="left">
