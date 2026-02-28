@@ -35,11 +35,12 @@ CLASS_FOLDER = WEBAPP_PATH / "Classes"
 SOLVERs_FOLDER = WEBAPP_PATH / "SOLVERs"
 EXTRACT_FOLDER = BASE_DIR
 
-# Ensure DataStorage exists before chmod
+# Ensure DataStorage exists
 DATA_STORAGE.mkdir(parents=True, exist_ok=True)
-os.chmod(DATA_STORAGE, 0o777)
 
-
+# Validate writability instead of forcing permissions
+if not os.access(DATA_STORAGE, os.W_OK):
+    raise PermissionError(f"Data storage path is not writable: {DATA_STORAGE}")
 #absolute paths
 # OSEMOSYS_ROOT = os.path.abspath(os.getcwd())
 # UPLOAD_FOLDER = Path(OSEMOSYS_ROOT, 'WebAPP')
