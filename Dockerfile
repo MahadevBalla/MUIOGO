@@ -4,18 +4,31 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy project files
-COPY . /app/
+# Create non-root user
+RUN useradd -m muiogo
 
-# Install necessary system dependencies (GLPK, CBC, etc.) and Python dependencies
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends glpk-utils coinor-cbc unzip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    unzip -oq assets/demo-data/CLEWs.Demo.zip -d /app && \
-    pip install --no-cache-dir --upgrade -r requirements.txt 
+    rm -rf /var/lib/apt/lists/*
 
-# Expose the port for Flask app
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# Seed demo data
+RUN unzip -oq assets/demo-data/CLEWs.Demo.zip -d /app
+
+# Ensure correct ownership
+RUN chown -R muiogo:muiogo /app
+
+# Switch to non-root user
+USER muiogo
+
 EXPOSE 5002
 
 ENV PORT=5002 \

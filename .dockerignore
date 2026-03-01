@@ -25,4 +25,4 @@ Thumbs.db
 
 WebAPP/DataStorage/*
 !WebAPP/DataStorage/Parameters.json
-!WebAPP/DataStorage/Variables.json\
+!WebAPP/DataStorage/Variables.json
