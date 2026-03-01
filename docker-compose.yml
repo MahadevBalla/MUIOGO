@@ -1,0 +1,13 @@
+services:
+  api:
+    build: .
+    ports:
+      - "${PORT:-5002}:${PORT:-5002}"
+    environment:
+      PORT: "${PORT:-5002}"
+    volumes:
+      - datastorage:/app/WebAPP/DataStorage
+    restart: unless-stopped
+
+volumes:
+  datastorage:

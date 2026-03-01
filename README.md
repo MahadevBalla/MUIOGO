@@ -49,6 +49,16 @@ For setup options, use the "--help" flag:
 - macOS / Linux: `./scripts/setup.sh --help`
 - Windows: `scripts\setup.bat --help`
 
+### Docker (Optional)
+
+```bash
+docker compose up --build
+```
+
+Open <http://localhost:5002>.
+
+See [docs/DOCKER.md](docs/DOCKER.md) for full usage, port override, data persistence, and troubleshooting.
+
 ## Demo Data
 
 - Archive: `assets/demo-data/CLEWs.Demo.zip`
