@@ -16,8 +16,10 @@ permissions:
   issues: read
 
 concurrency:
-  group: sync-project-priority-from-labels
-  cancel-in-progress: true
+  # Queue per issue so rapid label changes on one issue are processed in order
+  # and never canceled by updates on other issues.
+  group: sync-project-priority-from-labels-${{ github.repository }}-${{ github.event.issue.number || inputs.issue_number || 'manual' }}
+  cancel-in-progress: false
 
 jobs:
   sync:
