@@ -938,8 +938,8 @@ class Osemosys():
                     (obj['TsId'] == Timeslice if Timeslice is not None else True)):
                     obj[year] = value
             File.writeFile( jsonData, jsonPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def updateTEViewData(self, casename, ScId, GroupId, ParamId, TechId, EmisId, value):
         try:
@@ -952,5 +952,5 @@ class Osemosys():
                         (k == EmisId if EmisId is not None else True)):
                         obj[k] = value
             File.writeFile( jsonData, jsonPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
