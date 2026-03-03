@@ -149,6 +149,11 @@ def getResultData():
 def getParamFile():
     try:
         dataJson = request.json['dataJson']
+
+        allowed_files = {"Parameters.json", "Variables.json"}
+        if dataJson not in allowed_files:
+            return jsonify({"message": "Invalid configuration file requested.", "status_code": "error"}), 400
+
         configPath = Path(Config.DATA_STORAGE, dataJson)
         ConfigFile = File.readParamFile(configPath)
         response = ConfigFile       
@@ -182,6 +187,10 @@ def resultsExists():
 @case_api.route("/saveParamFile", methods=['POST'])
 def saveParamFile():
     try:
+        active_case = session.get('osycase')
+        if not active_case:
+            return jsonify({'message': 'No active session.', 'status_code': 'error'}), 403
+
         ParamData = request.json['ParamData']
         VarData = request.json['VarData']
 
