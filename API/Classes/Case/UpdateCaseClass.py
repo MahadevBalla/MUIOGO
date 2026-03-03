@@ -31,8 +31,8 @@ class UpdateCase(Osemosys):
 
 
             File.writeFile( Rdata, self.rPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RY(self):
         try:
@@ -58,8 +58,8 @@ class UpdateCase(Osemosys):
                     RYdata[ry['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYdata, self.ryPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RT(self):
         try:
@@ -82,8 +82,8 @@ class UpdateCase(Osemosys):
                             chunk[tech['TechId']] = None
                     RTdata[rt['id']][sc['ScenarioId']].append(chunk)
             File.writeFile( RTdata, self.rtPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RE(self):
         try:
@@ -109,8 +109,8 @@ class UpdateCase(Osemosys):
 
 
             File.writeFile( RTdata, self.rePath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RS(self):
         try:
@@ -138,8 +138,8 @@ class UpdateCase(Osemosys):
             else:
                 case = Case(self.case, self.genDataUpdate)
                 case.default_RS()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
         
     def update_RTSM(self):
         try:
@@ -179,8 +179,8 @@ class UpdateCase(Osemosys):
             else:
                 case = Case(self.case, self.genDataUpdate)
                 case.default_RTSM()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
         
     def update_RYCn(self):
         try:
@@ -207,8 +207,8 @@ class UpdateCase(Osemosys):
                         RYCndata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYCndata, self.rycnPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYT(self):
         try:
@@ -237,8 +237,8 @@ class UpdateCase(Osemosys):
                         RYTdata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYTdata, self.rytPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYS(self):
         try:
@@ -271,8 +271,8 @@ class UpdateCase(Osemosys):
             else:
                 case = Case(self.case, self.genDataUpdate)
                 case.default_RYS()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
         
     def update_RYTCn(self):
         try:
@@ -306,8 +306,8 @@ class UpdateCase(Osemosys):
                                 RYTCndata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYTCndata, self.rytcnPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYTM(self):
         try:
@@ -340,8 +340,8 @@ class UpdateCase(Osemosys):
 
             File.writeFile( RYTMdata, self.rytmPath)
 
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYC(self):
         try:
@@ -369,8 +369,8 @@ class UpdateCase(Osemosys):
                         RYCdata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYCdata, self.rycPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYE(self):
         try:
@@ -398,8 +398,8 @@ class UpdateCase(Osemosys):
                         RYEdata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYEdata, self.ryePath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYTs(self):
         try:
@@ -426,8 +426,8 @@ class UpdateCase(Osemosys):
                         RYTsdata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYTsdata, self.rytsPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYDtb(self):
         try:
@@ -458,8 +458,8 @@ class UpdateCase(Osemosys):
                 case = Case(self.case, self.genDataUpdate)
                 case.default_RYDtb()
             
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYSeDt(self):
         try:
@@ -495,8 +495,8 @@ class UpdateCase(Osemosys):
             else:
                 case = Case(self.case, self.genDataUpdate)
                 case.default_RYSeDt()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
               
     def update_RYTC(self):
         try:
@@ -529,8 +529,8 @@ class UpdateCase(Osemosys):
 
             File.writeFile( RYTCdata, self.rytcPath)
 
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYTCM(self):
         try:
@@ -567,8 +567,8 @@ class UpdateCase(Osemosys):
 
             File.writeFile( RYTEMdata, self.rytcmPath)
 
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYTSM(self):
         try:
@@ -610,8 +610,8 @@ class UpdateCase(Osemosys):
             else:
                 case = Case(self.case, self.genDataUpdate)
                 case.default_RYTSM()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
         
     def update_RYTE(self):
         try:
@@ -645,8 +645,8 @@ class UpdateCase(Osemosys):
 
             File.writeFile( RYTEdata, self.rytePath)
 
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYTEM(self):
         try:
@@ -686,8 +686,8 @@ class UpdateCase(Osemosys):
 
             File.writeFile( RYTEMdata, self.rytemPath)
 
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYTTs(self):
         try:
@@ -719,8 +719,8 @@ class UpdateCase(Osemosys):
                             RYTTsdata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYTTsdata, self.ryttsPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def update_RYCTs(self):
         try:
@@ -753,8 +753,8 @@ class UpdateCase(Osemosys):
                             RYCTsdata[ryt['id']][sc['ScenarioId']].append(chunk)
 
             File.writeFile( RYCTsdata, self.ryctsPath)
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
     
     def updateCase(self):
         try:
@@ -763,5 +763,5 @@ class UpdateCase(Osemosys):
                     func_name = f"update_{group}"
                     func = getattr(self, func_name)
                     func()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
