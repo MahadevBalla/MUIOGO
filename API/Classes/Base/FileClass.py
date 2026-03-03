@@ -9,11 +9,11 @@ class File:
                 data = json.loads(f.read())
             return data
         except IndexError:
-            raise IndexError
+            raise
         except IOError:
-            raise IOError
+            raise
         except OSError:
-            raise OSError
+            raise
 
     @staticmethod
     def writeFile(data, path):
@@ -23,7 +23,7 @@ class File:
         except (IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     @staticmethod
     def writeFileUJson(data, path):
@@ -33,7 +33,7 @@ class File:
         except (IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     @staticmethod
     def readParamFile(path):
@@ -42,8 +42,8 @@ class File:
                 data = json.loads(f.read())
             return data
         except IndexError:
-            raise IndexError
+            raise
         except IOError:
-            raise IOError
+            raise
         except OSError:
-            raise OSError
+            raise
