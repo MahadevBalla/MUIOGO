@@ -31,8 +31,8 @@ class SyncS3():
             else:
                 cases = []
             return cases
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def downloadSync(self, prefix, local, bucket):
         """
@@ -113,8 +113,8 @@ class SyncS3():
         try:
             my_bucket = self.resource.Bucket(Config.S3_BUCKET)
             my_bucket.objects.filter(Prefix=case+"/").delete()
-        except(IOError):
-            raise IOError
+        except IOError:
+            raise
 
     def updateSync(self, localFile, awsInitDir, bucketName):
         """
