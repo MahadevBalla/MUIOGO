@@ -786,7 +786,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def createCaseRun(self, caserunname, data):
         try:
@@ -818,7 +818,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def deleteScenarioCaseRuns(self, scenarioId):
         try:
@@ -843,7 +843,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def updateCaseRun(self, caserunname, oldcaserunname, data):
         try:
@@ -897,7 +897,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def deleteCaseResultsJSON(self, caserunname):
         try:
@@ -919,7 +919,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
         
     def deleteCaseRun(self, caserunname, resultsOnly):
         try:
@@ -958,7 +958,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def cleanUp(self):
         try:
@@ -1021,7 +1021,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
         
     def saveView(self, data, param):
         try:
@@ -1043,7 +1043,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def updateViews(self, data, param):
         try:
@@ -1065,7 +1065,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def readDataFile( self, caserunname ):
         try:
@@ -1086,7 +1086,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def parseDataFile(self, dataFilePath):
         try:
@@ -1182,7 +1182,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def validateInputs(self, caserunname):
         try:
@@ -1641,7 +1641,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
         
     def preprocessData(self, data_infile, data_outfile):
         try:
@@ -2081,7 +2081,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def run( self, solver, caserun, lock=None ):
         try:
@@ -2268,7 +2268,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
     
     def generateCSVfromCBC(self, data_file, results_file, base_folder=os.getcwd()):
         try:
@@ -2538,7 +2538,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
     
     def generateResultsViewer(self, caserunname):
         try:
@@ -2902,7 +2902,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
 
     ############################################################################################### OBSOLETE METHODS 
@@ -3240,7 +3240,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     # Dodali u postprocessing Annualized Investment Cost - potrebo dodati nove parametre
     def generateCSVfromCBC_20240228(self, data_file, results_file, base_folder=os.getcwd()):
@@ -3413,7 +3413,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
     
     ##izmjene da bi se napunili csv za InputToNewCapacity i InputToTotalCapacity
     def generateCSVfromCBC09122023(self, data_file, results_file, base_folder=os.getcwd()):
@@ -3722,7 +3722,7 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
 
     def preprocessData_BKP(self, data_infile, data_outfile):
 
@@ -4454,5 +4454,5 @@ class DataFile(Osemosys):
         except(IOError, IndexError):
             raise IndexError
         except OSError:
-            raise OSError
+            raise
     
