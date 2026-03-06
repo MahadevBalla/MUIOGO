@@ -415,7 +415,7 @@ def _windows_add_to_user_path(bin_dir: Path) -> None:
         )
     except Exception as exc:
         _print_warn(
-            "Could not persist CBC to user PATH; add manually", f"{bin_dir} ({exc})"
+            "Could not persist solver to user PATH; add manually", f"{bin_dir} ({exc})"
         )
     print("  Note: open a NEW terminal for this PATH change to take effect.")
 
